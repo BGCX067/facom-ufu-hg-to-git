@@ -3,12 +3,30 @@
 #include <string.h>
 #include <time.h>
 #include "algoritmos.h"
+#include "err.h"
 
 int type, size, alg;
 
 void (*ptalgs[8])(Item, int, int, int);
 
 int (*p)(Item, Item);
+
+void err(int errCode, char file[], int line)
+{
+	fprintf(strerr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
+	exit(errCode);
+}
+
+struct algoritimo {
+	int(*func)(void *base, size_t num, size_t size, int(*comp)(const void*,const void*)),
+	char name[50],
+	char description[0x200]
+} Algs[] = 
+{
+	{qsort, "QuickSort LIBC","LIBC implementation of QuickSort"},
+	{NULL, NULL, NULL}
+};
+
 
 Item *gerarandomico(){
     Item ran(){
@@ -61,6 +79,13 @@ void printKeys(Item vet[], int tam){
     }
     printf("\n");
 }
+
+
+int main(int argc, char *argv[])
+{
+	
+}
+
 
 int main(int argc, char** argv){
     void preenche(){

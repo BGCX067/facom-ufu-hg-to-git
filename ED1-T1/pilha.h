@@ -1,4 +1,4 @@
-# define MAX 100000
+# define MAX 1000000
 
 typedef struct no{
 	int topo;

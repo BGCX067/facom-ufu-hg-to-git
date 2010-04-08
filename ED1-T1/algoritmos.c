@@ -1,15 +1,22 @@
+#include <stdlib.h>
+#include <string.h>
 #include "algoritmos.h"
+#include "err.h"
 //#include "pilha.h"
 
-int compara(int a, int b){
-    if ( a < b) return 1;
-    return 0;
+
+void swap(void * e1, void *e2, size_t size)
+{
+	void *aux;
+	
+	if(!(aux=malloc(size)))
+		err(ERR_ALLOC,__FILE__, __LINE__);
+
+	memcpy(aux,e1,size);
+	memcpy(e1,e2,size);
+	memcpy(e2,aux,size);
 }
 
-int comp(hp a, hp b){
-    if ( a->chave < b ->chave ) return 1;
-    return 0;
-}
 
 void selectionsort(void *base,size_t num,size_t size,int(*)(const void*,const void*))
 {
@@ -68,18 +75,16 @@ void insertionSent(Item *vet, int l, int r, int (*less)(Item,Item)){
 	}
 }
 
-void bolhaS(Item *vet, int l, int r, int (*less)(Item,Item)){
-	int i, j;
-	Item b;
-	for (i = l; i <= r; i++){
-		for (j = l+1; j<= r; j++){
-			if ( !less(vet[j-1],vet[j]) ){
-			   b = vet[j-1];
-			   vet[j-1] = vet[j];
-			   vet[j] = b;
-			}
-		}
-	}
+
+void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
+{
+	register int i, j;
+
+
+	for (i = 0; i <= num; ++i)
+		for (j = i+1; j<= num; ++j)
+			if ( !comp(base+(j-1)*size,base+j*size) )
+				swap(base+(j-1)*size,base+j*size);
 }
 
 void bolhaCPA(Item *vet, int l, int r, int (*less)(Item,Item)){
@@ -113,7 +118,7 @@ void shellsort(Item *a, int l, int r, int (*less)(Item, Item)){
         }
 }
 
-void stacksort(int *vet, int tam, int (*less)(int,int)){
+/*void stacksort(int *vet, int tam, int (*less)(int,int)){
     int a, b, pos;
     int menor;
     pilha p;
@@ -136,7 +141,7 @@ void stacksort(int *vet, int tam, int (*less)(int,int)){
             vet[pos] = temp;
         }
     }
-}
+}*/
 
 int partition(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
 {
