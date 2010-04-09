@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <getopt.h>
+#include <sys/time.h>
 
 #include "err.h"
 //#include "algoritmos.h"
 
 typedef void(*SortFuncPtr)(void*,size_t,size_t,int(*)(const void*,const void*));
+
+struct hipo
+{
+  int chave;
+  int resto[100000]; // 100 mil posições
+};
 
 /*int type, size, alg;
 
@@ -16,6 +22,18 @@ void (*ptalgs[8])(Item, int, int, int);
 int (*p)(Item, Item);*/
 
 char *appName;
+
+
+int intComp(const int *i1, const int *i2)
+{
+	return *i2-*i1;
+}
+
+int hipoComp(const struct hipo *s1,const struct *s2)
+{
+	return s2->chave - s1->chave;
+}
+
 
 void err(int errCode, char file[], int line)
 {
@@ -106,11 +124,11 @@ void usage (int status)
 	if(!status)
 	{
 		fprintf(stderr,"Usage: %s [-a alg] -t tam [-x3]\n", appName);
-		fprintf(stderr,"\tWhere:\t\t tam is the test vector size\n");
-		fprintf(stderr,"\t\tx3 runs experiment 3. Without it runs experiments 1 and 2\n");
-		fprintf(stderr,"\t\tAlg is the algorithm name. These's the disponible ones:\n");
+		fprintf(stderr,"\nWhere:\ttam is the test vector size. Use tam<0 for defaults testes\n");
+		fprintf(stderr,"\tx3 runs experiment 3. Without it runs experiments 1 and 2\n");
+		fprintf(stderr,"\tAlg is the algorithm name. These's the disponible ones:\n");
 		for( i=0 ; AlgNames[i].name ; ++i )
-			fprintf(stderr,"\t\t\t%s\n",AlgNames[i].name);
+			fprintf(stderr,"\t\t%s\n",AlgNames[i].name);
 		fputs("\n",stderr);
 	}
 	
@@ -120,10 +138,10 @@ void usage (int status)
 
 int main(int argc, char *argv[])
 {
-	int i;
-	int c, tam=0;
+	int i,c;
 	static int x3=0;
 	SortFuncPtr algo;
+	static int tam[] = {0,0};
 
 	static struct option const long_options[] =
 	{
@@ -135,7 +153,7 @@ int main(int argc, char *argv[])
 	appName = argv[0];
 
 
-	if(argc<1)
+	if(argc<=1)
 	{
 		usage(0);
 		return 0;
@@ -146,7 +164,7 @@ int main(int argc, char *argv[])
 		switch(c)
 		{
 			case 't':
-				tam = atoi(optarg);
+				*tam = atoi(optarg);
 				break;
 
 			case 'a':
@@ -160,7 +178,7 @@ int main(int argc, char *argv[])
 			
 			case 'h':
 				usage(0);
-				break;
+				return 0;
 
 /* Esse case '?' eu tirei de um ultilitario GNU */
 			case '?':
@@ -173,14 +191,87 @@ int main(int argc, char *argv[])
 				return -2;
 		}
 
-	if(!tam)
+	if(!*tam)
 	{
 		usage(-3);
 		return -3;
 	}
 
+	if(x3)
+	{
+		if(*tam<0) *tam = 500;
+		experimento(tamVet, hipoFill, hipoComp);
+	}
+	else
+	{
+		if(*tam<0) tem = NULL;
+		experimento( 
+	}
+	
 
+
+
+
+	return 0;
 }
+
+
+void intRandFill(void *v, size_t num)
+{
+	register int i;
+	int vet* = (int*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i]= rand();
+}
+
+void intOrdFill(void *v, size_t num)
+{
+	register int i;
+	int vet* = (int*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i]= i;
+}
+
+void hipoFill(void *v, size_t num)
+{
+	register int i;
+	int vet* = (struct hipo*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i].chave = rand();
+}
+
+void ex1()
+{
+	return experimento(NULL, intRandFill, intComp);
+}
+
+int  ex2()
+{
+	return experimento(NULL, IntOrdFill, intComp);
+}
+
+int ex3()
+{
+	static int tamVet[] = {500,0};
+	
+}
+
+/*
+Arg1: Vetor com tamnhos dos testes a ser realizado. Termina com 0. Null usa vetor padrão
+Arg2: Ponteiro de função que preenche os vetores
+Arg3: Ponteiro para a função que compara 2 elementos do vetor
+
+*/
+int experimento(const int *tamVet,void(*fill)(void*) ,int(*comp)(const void*,const void*))
+{
+	static int DefaultTamVet[] = {5000,10000,20000,40000,0};
+	
+
+	if(!tamVet) tamVet = DefaultTamVet;
+
 
 /*
 int main(int argc, char** argv){
