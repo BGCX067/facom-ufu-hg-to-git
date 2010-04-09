@@ -2,32 +2,50 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "algoritmos.h"
-#include "err.h"
+#include <getopt.h>
 
-int type, size, alg;
+#include "err.h"
+//#include "algoritmos.h"
+
+typedef void(*SortFuncPtr)(void*,size_t,size_t,int(*)(const void*,const void*));
+
+/*int type, size, alg;
 
 void (*ptalgs[8])(Item, int, int, int);
 
-int (*p)(Item, Item);
+int (*p)(Item, Item);*/
+
+char *appName;
 
 void err(int errCode, char file[], int line)
 {
-	fprintf(strerr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
+	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
 	exit(errCode);
 }
 
-struct algoritimo {
-	int(*func)(void *base, size_t num, size_t size, int(*comp)(const void*,const void*)),
-	char name[50],
-	char description[0x200]
+struct _st1 {
+	SortFuncPtr func;
+	char *name;
+	char *description;
 } Algs[] = 
-{
-	{qsort, "QuickSort LIBC","LIBC implementation of QuickSort"},
-	{NULL, NULL, NULL}
-};
+	{
+		{qsort, "QuickSort LIBC", "LIBC(bult-in) implementation of QuickSort"},
+		{NULL, NULL, NULL}
+	};
+
+/* Nomes de algoritimo para argumento do programa */
+struct algoNames {
+	char *name;
+	SortFuncPtr algo;
+} AlgNames [] = 
+	{
+		{"qsort",qsort},
+		{"quicksortclib",qsort},
+		{NULL, NULL}
+	};
 
 
+/*
 Item *gerarandomico(){
     Item ran(){
         int i;
@@ -78,15 +96,93 @@ void printKeys(Item vet[], int tam){
         printItem(vet[i]);
     }
     printf("\n");
-}
+}*/
 
+
+void usage (int status)
+{
+	int i;
+
+	if(!status)
+	{
+		fprintf(stderr,"Usage: %s [-a alg] -t tam [-x3]\n", appName);
+		fprintf(stderr,"\tWhere:\t\t tam is the test vector size\n");
+		fprintf(stderr,"\t\tx3 runs experiment 3. Without it runs experiments 1 and 2\n");
+		fprintf(stderr,"\t\tAlg is the algorithm name. These's the disponible ones:\n");
+		for( i=0 ; AlgNames[i].name ; ++i )
+			fprintf(stderr,"\t\t\t%s\n",AlgNames[i].name);
+		fputs("\n",stderr);
+	}
+	
+	if(status==-3)
+		fprintf(stderr,"The argument \"-t value\" is bounden\nCall %s with no arguments to see usage\n",appName);
+}
 
 int main(int argc, char *argv[])
 {
+	int i;
+	int c, tam=0;
+	static int x3=0;
+	SortFuncPtr algo;
+
+	static struct option const long_options[] =
+	{
+		{"x3", no_argument, &x3, 1},
+		{"help", no_argument, 0, 'h'},
+		{NULL, 0, NULL, 0}
+	};
 	
+	appName = argv[0];
+
+
+	if(argc<1)
+	{
+		usage(0);
+		return 0;
+	}
+
+	int optIndex = 0;	
+	while ( (c=getopt_long(argc, argv,"a:t:h",long_options, &optIndex)) != -1)
+		switch(c)
+		{
+			case 't':
+				tam = atoi(optarg);
+				break;
+
+			case 'a':
+				for(i=0;AlgNames[i].name;++i)
+					if(!(strcmp(optarg,AlgNames[i].name)))
+					{
+						algo = AlgNames[i].algo;
+						break;
+					}
+				break;
+			
+			case 'h':
+				usage(0);
+				break;
+
+/* Esse case '?' eu tirei de um ultilitario GNU */
+			case '?':
+				if (optopt == 'a' || optopt == 't')
+					fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+				else if (isprint (optopt))
+					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+				else
+					fprintf (stderr,"Unknown option character `\\x%x'.\n", optopt);
+				return -2;
+		}
+
+	if(!tam)
+	{
+		usage(-3);
+		return -3;
+	}
+
+
 }
 
-
+/*
 int main(int argc, char** argv){
     void preenche(){
         size = type = 0;
@@ -161,3 +257,4 @@ int main(int argc, char** argv){
     return 1;
 }
 
+*/

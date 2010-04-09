@@ -5,7 +5,7 @@
 #define ERR_ALLOC -3
 
 
-errStrings[][20]=
+char const *errStrings[]=
 {
 	"Sucess",
 	"Unknow error",
@@ -14,4 +14,4 @@ errStrings[][20]=
 	NULL
 };
 
-void err(int errCode);
+void err(int errCode, char file[], int line);
