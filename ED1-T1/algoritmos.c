@@ -18,63 +18,58 @@ void swap(void * e1, void *e2, size_t size)
 }
 
 
-void selectionsort(void *base,size_t num,size_t size,int(*)(const void*,const void*))
-{
-    int a, b, pos;
-    Item menor;
-    for (a = l; a <= r; ++a){
-        menor = vet[a];
-        b = a + 1;
-        while ( b <= r ){
-            if ( less(vet[b],menor) ){
-                menor = vet[b];
+void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*)){
+    size_t a, b, pos;
+    void *menor = malloc(size);
+    for ( a = 0; a < num*size; a+=size)
+    {
+        memcpy(menor,(base+a),size);
+        b = pos = a + size;
+        while ( b < num*size )
+        {
+            if ( less(base+b,menor) < 0 )
+            {
+                memcpy(menor,base+b,size);
                 pos = b;
             }
-            b++;
+            b += size;
         }
-        if ( menor != vet[a] ){
-            Item temp = vet[a];
-            vet[a] = menor;
-            vet[pos] = temp;
-        }
+        if ( memcmp(menor,base+a,size) < 0 )
+            swap(base+a,base+pos,size);
     }
 }
 
-void insertionsort(Item *vet, int l, int r, int (*less)(Item, Item)){
-    int i, k;
-    Item index;
-	for ( i = l; i <= r; i++){
+void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+    size_t i, k;
+    void *index = malloc(size);
+	for ( i = 0; i < num*size; i+=size){
 		k = i;
-		index = vet[i];
-		while( ( k != 0 ) && ( !less(vet[k-1],index) ) ){
-			vet[k] = vet[k-1];
-			k--;
+		memcpy(index,base+i,size);
+		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) ){
+			memcpy(base+k,base+(k-size),size);
+			k-=size;
 		}
-		vet[k] = index;
+		memcpy(base+k,index,size);
 	}
 }
 
-void insertionSent(Item *vet, int l, int r, int (*less)(Item,Item)){
-	int i, k;
-	Item index, b;
-	for (i = r; i >= l; i--){
-		if ( vet[i] == vet[i-1] ){
-			b = vet[i];
-			vet[i] = vet[i-1];
-			vet[i-1] = b;
-		}
+void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+	size_t i, k;
+	void *index = malloc(size);//, *b = malloc(size);
+	for (i = size*(num-1); 0 > i; i-=size){
+		if ( memcmp(base+i,base+(i-size),size) == 0 )
+		    swap(base+i,base+(i-size),size);
 	}
-	for ( i = l; i <= r; i++){
+	for ( i = 0; i < num*size; i+=size){
 		k = i;
-		index = vet[i];
-		while( ( k != 0 ) && ( !less(vet[k-1],index) ) ){
-			vet[k] = vet[k-1];
-			k--;
+		memcpy(index,base+i,size);
+		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) ){
+			memcpy(base+k,base+(k-size),size);
+			k-=size;
 		}
-		vet[k] = index;
+		memcpy(base+k,index,size);
 	}
 }
-
 
 void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
 {
@@ -87,34 +82,34 @@ void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const
 				swap(base+(j-1)*size,base+j*size);
 }
 
-void bolhaCPA(Item *vet, int l, int r, int (*less)(Item,Item)){
-	int i, j, troca;
-	Item b;
-	for (i = l, troca = 0; i <= r; i++){
-		for (j = l+1; j<= r; j++){
-			if ( !less(vet[j-1],vet[j]) ){
-			   b = vet[j-1];
-			   vet[j-1] = vet[j];
-			   vet[j] = b;
-			   troca = 1;
+void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+    int troca;
+	size_t i, j;
+	for (i = 0, troca = 0; i < size*num; i+=size){
+		for (j = size; j< num*size; j+=size){
+			if ( less(base+(j-size),base+j) > 0 ){
+       		    swap(base+(j-size),base+j,size);
+                troca = 1;
 			}
 		}
 		if (troca == 0) break;
 	}
 }
 
-void shellsort(Item *a, int l, int r, int (*less)(Item, Item)){
-    int i,j,h;
-    for( h = 1; h <= (r-1)/9; h = (3*h) + 1);
+void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+    int h;
+    size_t i,j;
+    void *v = malloc(size);
+    for( h = 1; h < (num*size)/9; h = (3*h) + 1);
     for( ; h > 0; h /= 3)
-        for ( i = l+h; i <= r; ++i){
+        for ( i = h*size; i < num*size; i+=size){
             j = i;
-            Item v = a[i];
-            while( j >= l + h && less(v, a[j-h]) ){
-                a[j] = a[j - h];
-                j -= h;
+            memcpy(v,base+i,size);
+            while( (j >= h*size) && (less(v, base+(j-(h*size))) < 0)){
+                memcpy(base+j,base+(j-(h*size)),size);
+                j -= (h*size);
             }
-            a[j] =v;
+            memcpy(base+j,v,size);
         }
 }
 
