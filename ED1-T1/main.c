@@ -96,7 +96,7 @@ int hipoComp(const struct hipo *s1, const struct hipo *s2)
 
 void err(int errCode, char file[], int line)
 {
-	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
+	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[abs(errCode)],file,line);
 	exit(errCode);
 }
 
@@ -147,6 +147,7 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int
 	register int k;
 	struct timeval t1,t2;
 	char * vet[3];
+	int *p;
 
 	/* vet[0] : vetor original */
 	if(!(vet[0] = malloc(tamVet * size * 3)))
@@ -163,6 +164,10 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int
 	if(!fillFuncNames[k].name)
 		err(ERR_UNKNOWFUNCTION,__FILE__,__LINE__);
 
+	puts("Before:");
+	for( k=0,p=(int*)vet[0] ; k<20 && k<size ; ++k , p = (int*)(vet[0]+(k*size)) )
+			printf("%i\n", *p);
+	puts("\n");
 
 	fprintf(out, "TipoDeDado: \"%s\"\tSize: %i\tTamVet: %i\n", fillFuncNames[k].name, size, tamVet);
 	fprintf(out, "Algoritimo\tTempoSeg\tTempouseg\n");
@@ -170,13 +175,21 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int
 	{
 		memcpy(vet[1], vet[0], tamVet * size);
 	
+		
+	
 		gettimeofday(&t1, NULL);
 		Algs[i].func(vet[1], tamVet, size, comp);
 		gettimeofday(&t2, NULL);
 
+
+		printf("Afer (%s):\n",Algs[i].name);
+		for( k=0,p=(int*)vet[1] ; k<20 && k<size ; ++k , p = (int*)(vet[1]+(k*size))  )
+			printf("%i\n", *p);
+		puts("\n");
+
 		/* Verifica se a função fez tudo certo */
 		memcpy(vet[2], vet[1], tamVet * size);
-		qsort(vet[3], tamVet, size, comp);
+		qsort(vet[2], tamVet, size, comp);
 		for( k=0 ; k <tamVet * size ; ++k)
 			if(vet[1][k] != vet[2][k])
 				err(ERR_ORDFUNC,__FILE__,__LINE__);
@@ -223,10 +236,9 @@ int main(int argc, char *argv[])
 {
 	int i,j,c;
 	static int tam=0, x3=0, seed=0;
-	SortFuncPtr algo;
 	static int DefaultTamVet[] = {5000,10000,20000,40000,0};
 	static struct timeval tod;
-	static struct Algoritimos *Algs = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
+	static struct Algoritimos *Algs, Alg[] = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
 
 	static struct option const long_options[] =
 	{
@@ -249,7 +261,7 @@ int main(int argc, char *argv[])
 	}
 
 	int optIndex = 0;	
-	while ( (c=getopt_long(argc, argv,"a:t:S:hx::",long_options, &optIndex)) != -1)
+	while ( (c=getopt_long(argc, argv,"a:t:S:hx:",long_options, &optIndex)) != -1)
 		switch(c)
 		{
 			case 't':
@@ -260,15 +272,13 @@ int main(int argc, char *argv[])
 				for(i=0 ; AlgNames[i].name ; ++i)
 					if(!(strcmp(optarg,AlgNames[i].name)))
 					{
-					
-						algo = AlgNames[i].algo;
 						for( j=0 ; AlgsGlobal[j].func ; ++j )
 
 							if(AlgsGlobal[j].func == AlgNames[i].algo)
 							{
-								Algs[0].func = AlgsGlobal[j].func;
-								Algs[0].name = AlgsGlobal[j].name;
-								Algs[0].description = AlgsGlobal[j].description;
+								Alg[0].func = AlgsGlobal[j].func;
+								Alg[0].name = AlgsGlobal[j].name;
+								Alg[0].description = AlgsGlobal[j].description;
 								break;
 							}
 						if(!AlgsGlobal[j].func)
@@ -286,6 +296,10 @@ int main(int argc, char *argv[])
 					gettimeofday(&tod,NULL);
 					seed = tod.tv_usec;
 				}
+				break;
+
+			case 'x':
+				x3 = 1;
 				break;
 			
 			case 'h':
@@ -309,7 +323,9 @@ int main(int argc, char *argv[])
 		return -3;
 	}
 
-	if(!Algs[0].func)
+	if(Alg[0].func)
+		Algs = Alg;
+	else
 		Algs = AlgsGlobal;
 
 	srand(seed);
@@ -320,9 +336,8 @@ int main(int argc, char *argv[])
 
 	if(x3)
 	{
-	puts("alksjdlasjdkll");
 		if(tam<=0) tam = 500;
-		experimento(tam, sizeof(struct hipo), hipoFill, hipoComp, Algs);
+		experimento(tam, sizeof(struct hipo), hipoFill, (int(*)(const void*,const void*))hipoComp, Algs);
 	}
 	else
 	{
@@ -333,8 +348,8 @@ int main(int argc, char *argv[])
 		}
 		for( i=0 ; DefaultTamVet[i] ; ++i )
 		{
-			experimento(DefaultTamVet[i], sizeof(int), intRandFill, intComp, Algs);
-			experimento(DefaultTamVet[i], sizeof(int), intOrdFill, intComp, Algs);
+			experimento(DefaultTamVet[i], sizeof(int), intRandFill, (int(*)(const void*,const void*))intComp, Algs);
+			experimento(DefaultTamVet[i], sizeof(int), intOrdFill, (int(*)(const void*,const void*))intComp, Algs);
 		}
 	}
 	
