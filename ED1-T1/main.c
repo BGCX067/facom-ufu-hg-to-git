@@ -1,3 +1,18 @@
+/* Copyright (C) 1988, 1990-1991, 1995-2010 Free Software Foundation, Inc.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,35 +22,27 @@
 #include "err.h"
 //#include "algoritmos.h"
 
-typedef void(*SortFuncPtr)(void*,size_t,size_t,int(*)(const void*,const void*));
 
-struct hipo
-{
-  int chave;
-  int resto[100000]; // 100 mil posições
-};
+void intRandFill(void *v, size_t num);
+void intOrdFill(void *v, size_t num);
+void hipoFill(void *v, size_t num);
+
+
+typedef void(*SortFuncPtr)(void*,size_t,size_t,int(*)(const void*,const void*));
 
 
 char *appName;
 FILE *out;
 
 
-int intComp(const int *i1, const int *i2)
-{
-	return *i2-*i1;
-}
-
-int hipoComp(const struct hipo *s1,const struct *s2)
-{
-	return s2->chave - s1->chave;
-}
 
 
-void err(int errCode, char file[], int line)
+
+struct hipo
 {
-	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
-	exit(errCode);
-}
+  int chave;
+  int resto[100000]; // 100 mil posições
+};
 
 
 struct Algoritimos {
@@ -77,6 +84,118 @@ struct fillFuncs {
 
 
 
+int intComp(const int *i1, const int *i2)
+{
+	return *i2-*i1;
+}
+
+int hipoComp(const struct hipo *s1, const struct hipo *s2)
+{
+	return s2->chave - s1->chave;
+}
+
+void err(int errCode, char file[], int line)
+{
+	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[errCode],file,line);
+	exit(errCode);
+}
+
+
+
+
+
+
+void intRandFill(void *v, size_t num)
+{
+	register int i;
+	int *vet = (int*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i]= rand();
+}
+
+void intOrdFill(void *v, size_t num)
+{
+	register int i;
+	int *vet = (int*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i]= i;
+}
+
+void hipoFill(void *v, size_t num)
+{
+	register int i;
+	struct hipo *vet = (struct hipo*)v;
+
+	for(i=0; i<num ; ++i)
+		vet[i].chave = rand();
+}
+
+
+
+/*
+Arg1: int com tamnho dos teste a ser realizado.
+Arg2: int com tamanho de cada elemento do vetor.
+Arg3: Ponteiro de função que preenche os vetores
+Arg4: Ponteiro para a função que compara 2 elementos do vetor
+Arg5: Vetor da struct algoritimos com as função de ordenação a serem usadas. Termina com NULLs
+*/
+int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int(*comp)(const void*,const void*), struct Algoritimos Algs[])
+{
+	int i;
+	register int k;
+	struct timeval t1,t2;
+	char * vet[3];
+
+	/* vet[0] : vetor original */
+	if(!(vet[0] = malloc(tamVet * size * 3)))
+		err(ERR_ALLOC,__FILE__,__LINE__);
+
+	vet[1] = vet[0] + size*tamVet; /*Vetor para ordenar */
+	vet[2] = vet[1] + size*tamVet; /*Vetor para conferir ordenacao */
+
+	fill(vet[0], tamVet);
+
+	for( k=0 ; fillFuncNames[k].name ; ++k )
+		if(fillFuncNames[k].fillFunc == fill)
+			break;
+	if(!fillFuncNames[k].name)
+		err(ERR_UNKNOWFUNCTION,__FILE__,__LINE__);
+
+
+	fprintf(out, "TipoDeDado: \"%s\"\tSize: %i\tTamVet: %i\n", fillFuncNames[k].name, size, tamVet);
+	fprintf(out, "Algoritimo\tTempoSeg\tTempouseg\n");
+	for( i=0 ; Algs[i].func ; ++i )
+	{
+		memcpy(vet[1], vet[0], tamVet * size);
+	
+		gettimeofday(&t1, NULL);
+		Algs[i].func(vet[1], tamVet, size, comp);
+		gettimeofday(&t2, NULL);
+
+		/* Verifica se a função fez tudo certo */
+		memcpy(vet[2], vet[1], tamVet * size);
+		qsort(vet[3], tamVet, size, comp);
+		for( k=0 ; k <tamVet * size ; ++k)
+			if(vet[1][k] != vet[2][k])
+				err(ERR_ORDFUNC,__FILE__,__LINE__);
+				/* |->Função com erros */
+
+		fprintf(out,"%s\t%li\t%li\n",Algs[i].name, t2.tv_sec - t1.tv_sec, t2.tv_usec - t1.tv_usec);
+		
+	}
+
+	fputs("\n",out);
+	free(vet[0]);
+	
+}
+
+
+
+
+
+
 void usage (int status)
 {
 	int i;
@@ -107,7 +226,7 @@ int main(int argc, char *argv[])
 	SortFuncPtr algo;
 	static int DefaultTamVet[] = {5000,10000,20000,40000,0};
 	static struct timeval tod;
-	static struct Algoritimos Algs[] = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
+	static struct Algoritimos *Algs = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
 
 	static struct option const long_options[] =
 	{
@@ -130,7 +249,7 @@ int main(int argc, char *argv[])
 	}
 
 	int optIndex = 0;	
-	while ( (c=getopt_long(argc, argv,"a:t:S:h",long_options, &optIndex)) != -1)
+	while ( (c=getopt_long(argc, argv,"a:t:S:hx::",long_options, &optIndex)) != -1)
 		switch(c)
 		{
 			case 't':
@@ -201,105 +320,24 @@ int main(int argc, char *argv[])
 
 	if(x3)
 	{
+	puts("alksjdlasjdkll");
 		if(tam<=0) tam = 500;
-		experimento(tamVet,sizeof(struct hipo), hipoFill, hipoComp, Algs);
+		experimento(tam, sizeof(struct hipo), hipoFill, hipoComp, Algs);
 	}
 	else
 	{
-		if(tam<0) tem = NULL;
-		experimento( 
+		if(tam>0)
+		{
+			DefaultTamVet[0] = tam;
+			DefaultTamVet[1] = 0;
+		}
+		for( i=0 ; DefaultTamVet[i] ; ++i )
+		{
+			experimento(DefaultTamVet[i], sizeof(int), intRandFill, intComp, Algs);
+			experimento(DefaultTamVet[i], sizeof(int), intOrdFill, intComp, Algs);
+		}
 	}
 	
-
-
-
 
 	return 0;
-}
-
-
-void intRandFill(void *v, size_t num)
-{
-	register int i;
-	int vet* = (int*)v;
-
-	for(i=0; i<num ; ++i)
-		vet[i]= rand();
-}
-
-void intOrdFill(void *v, size_t num)
-{
-	register int i;
-	int vet* = (int*)v;
-
-	for(i=0; i<num ; ++i)
-		vet[i]= i;
-}
-
-void hipoFill(void *v, size_t num)
-{
-	register int i;
-	int vet* = (struct hipo*)v;
-
-	for(i=0; i<num ; ++i)
-		vet[i].chave = rand();
-}
-
-
-
-/*
-Arg1: int com tamnho dos teste a ser realizado.
-Arg2: int com tamanho de cada elemento do vetor.
-Arg3: Ponteiro de função que preenche os vetores
-Arg4: Ponteiro para a função que compara 2 elementos do vetor
-Arg5: Vetor da struct algoritimos com as função de ordenação a serem usadas. Termina com NULLs
-*/
-int experimento(const int tamVet, const int size, void(*fill)(void*), int(*comp)(const void*,const void*), struct Algoritimos Algs[])
-{
-	int i;
-	register int k;
-	struct timeval t1,t2;
-	void * vet[3];
-
-	/* vet[0] : vetor original */
-	if(!(vet[0] = malloc(tamVet * size * 3)))
-		err(ERR_ALLOC,__FILE__,__LINE__);
-
-	vet[1] = vet[0] + size*tamVet; /*Vetor para ordenar */
-	vet[2] = vet[1] + size*tamVet; /*Vetor para conferir ordenacao */
-
-	fill(vet[0], tamVet);
-
-	for( k=0 ; fillFuncNames[k].name ; ++k )
-		if(fillFuncNames[k].fillFunc == fill)
-			break;
-	if(!fillFuncNames[k])
-		err(ERR_UNKNOWFUNCTION,__FILE__,__LINE__);
-
-
-	frpintf(out, "TipoDeDado: \"%s\"\tSize: %i\tTamVet: %i\n", fillFuncNames[k].name, size, tamVet);
-	fprintf(out, "Algoritimo\tTempoSeg\tTempouseg\n");
-	for( i=0 ; Algs.func[i] ; ++i )
-	{
-		memcpy(vet[1], vet[0], tamVet * size);
-	
-		gettimeofday(&t1, NULL);
-		Algs[i].func(vet[1], tamVet, size, comp);
-		gettimeofday(&t2, NULL);
-
-		/* Verifica se a função fez tudo certo */
-		memcpy(vet[2], vet[1], tamVet * size);
-		qsort(vet[3], tamVet, size, comp);
-		for( k=0 ; k <tamVet * size ; ++k)
-			if(vet[1][k] != vet[2][k])
-				err(ERR_ORDFUNC,__FILE__,__LINE__);
-				/* |->Função com erros */
-
-		fprintf(out,"%s\t%li\t%li\n",Algs[i].name, t2.tv_sec - t1.tv_sec, t2.tv_usec - t1.tv_usec);
-		
-	}
-
-	fputs("\n",out);
-	free(vet[0]);
-	
 }
