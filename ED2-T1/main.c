@@ -36,7 +36,16 @@ FILE *out;
 
 
 
-
+char *errStrings[]=
+{
+	"Sucess",			/*  0 */
+	"Unknow error",		/* -1 */
+	"Generic error",	/* -2 */
+	"Memory allocation error", /* -3 */
+	"Ordenation function fails", /* -4 */
+	"Pointer to a function not know", /* -5 */
+	NULL
+};
 
 struct hipo
 {
@@ -45,18 +54,25 @@ struct hipo
 };
 
 
-struct Algoritimos {
+struct Algoritmos {
 	SortFuncPtr func;
 	char *name;
 	char *description;
 } AlgsGlobal[] = 
 	{
 		{qsort, "QuickSort LIBC", "LIBC(bult-in) implementation of QuickSort"},
+		{selectionsort, "SelectionSort", "Generic SelectionSort implementation"},
+		{insertionsort, "InsertionSort", "Generic InsertionSort implementation"},
+		{insertionSent, "InsertionSort with Sentinel", "Generic InsertionSort implementation (with Sentinel)"},
+		{bolhaS, "BubbleSort", "Generic BubbleSort implementation"},
+		{bolhaCPA, "BubbleSort with early stop", "Generic BubbleSort implementation (with early stop)"},
+    	{shellsort, "ShellSort", "Generic ShellSort implementation"},
+    	{quicksortRecursive,"Quick Sort Recursive","QuickSort Recursive (Generic)"},
 		{NULL, NULL, NULL}
 	};
 
 
-/* Nomes de algoritimo para argumento do programa */
+/* Nomes de algoritmo para argumento do programa */
 struct algoNames {
 	char *name;
 	SortFuncPtr algo;
@@ -64,6 +80,13 @@ struct algoNames {
 	{
 		{"qsort",qsort},
 		{"quicksortclib",qsort},
+		{"insert", insertionsort},
+		{"insertS", insertionSent},
+		{"selec", selectionsort},
+		{"bubble", bolhaS},
+		{"bubbleCPA", bolhaCPA},
+    	{"shell", shellsort},
+    	{"quicksort", quicksortRecursive},
 		{NULL, NULL}
 	};
 
@@ -79,21 +102,13 @@ struct fillFuncs {
 	{NULL, NULL}
 };
 
-
-
-
-
-
-
+////////////////////////////////////////////////////////////////////////
 
 void err(int errCode, char file[], int line)
 {
 	fprintf(stderr,"\n\nError: %s[%s:%i]\n\n",errStrings[abs(errCode)],file,line);
 	exit(errCode);
 }
-
-
-
 
 int intComp(const int *i1, const int *i2)
 {
@@ -148,9 +163,9 @@ Arg2: int com tamanho de cada elemento do vetor.
 Arg3: Ponteiro de função que preenche os vetores
 Arg4: Ponteiro para função q imprime o elemento
 Arg5: Ponteiro para a função que compara 2 elementos do vetor
-Arg6: Vetor da struct algoritimos com as função de ordenação a serem usadas. Termina com NULLs
+Arg6: Vetor da struct algoritmos com as função de ordenação a serem usadas. Termina com NULLs
 */
-int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), void(*printElem)(const void*), int(*comp)(const void*,const void*), struct Algoritimos Algs[])
+int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), void(*printElem)(const void*), int(*comp)(const void*,const void*), struct Algoritmos Algs[])
 {
 	int i;
 	register int k;
@@ -180,7 +195,7 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), voi
 
 
 	fprintf(out, "TipoDeDado: \"%s\"\tSize: %i\tTamVet: %i\n", fillFuncNames[k].name, size, tamVet);
-	fprintf(out, "Algoritimo\tTempoSeg\tTempouseg\n");
+	fprintf(out, "Algoritmo\tTempoSeg\tTempouseg\n");
 	for( i=0 ; Algs[i].func ; ++i )
 	{
 		memcpy(vet[1], vet[0], tamVet * size);
@@ -249,7 +264,7 @@ int main(int argc, char *argv[])
 	static int tam=0, x3=0, seed=0;
 	static int DefaultTamVet[] = {5000,10000,20000,40000,0};
 	static struct timeval tod;
-	static struct Algoritimos *Algs, Alg[] = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
+	static struct Algoritmos *Algs, Alg[] = {{NULL, NULL, NULL}, {NULL, NULL, NULL}};
 
 	static struct option const long_options[] =
 	{
@@ -262,7 +277,7 @@ int main(int argc, char *argv[])
 
 
 	appName = argv[0];
-	out = stdout;
+	out = stderr;
 
 
 	if(argc<=1)

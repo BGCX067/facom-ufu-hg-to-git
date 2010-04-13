@@ -32,7 +32,6 @@ void swap(void * e1, void *e2, size_t size)
 	memcpy(e2,aux,size);
 }
 
-
 void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {
     size_t a, b, pos;
@@ -50,9 +49,10 @@ void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,c
             }
             b += size;
         }
-        if ( memcmp(menor,base+a,size) < 0 )
+        if ( less(menor,base+a) < 0 )
             swap(base+a,base+pos,size);
     }
+   	free(menor);
 }
 
 void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
@@ -94,15 +94,13 @@ void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*,
 	}
 }
 
-void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
+void bolhaS(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {
-	register int i, j;
-
-
-	for (i = 0; i <= num; ++i)
-		for (j = i+1; j<= num; ++j)
-			if ( !comp(base+(j-1)*size,base+j*size) )
-				swap(base+(j-1)*size,base+j*size,size);
+	size_t i, j;
+	for (i = 0; i < num*size; i+=size)
+		for (j = size; j< num*size; j+=size)
+			if ( less(base+(j-size),base+j) > 0 )
+				swap(base+(j-size),base+j,size);
 }
 
 void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
@@ -167,35 +165,67 @@ void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, con
     }
 }*/
 
-int partition(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
+int partition(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {
-    int i = l - 1;
-    int j = r;
-    Item v = a[r];
+    int i = -1;
+    int j = (int)num-1;
+    void *v = malloc(size);
+    memcpy(v,base+(num-1)*size,size);
     for( ; ; ){
-        while( less(a[++i], v) );
-        while( less(v, a[--j]) )
-            if ( j == l ) break;
+        while( less(base+(++i)*size, v) );
+        while( less(v, base+(--j)*size) )
+            if ( j == 0 ) break;
         if ( i >= j ) break;
-        Item c = a[i];
-        a[i] = a[j];
-        a[j] = c;
+        swap(base+i*size,base+j*size,size);
     }
-    Item c = a[i];
-    a[i] = a[r];
-    a[r] = c;
+    swap(base+i*size,base+(num-1)*size,size);
     return i;
 }
 
 
-void quicksortRecursive(void *base, size_t num, size_t size, int(*comp)(const void*,const void*))
+void quicksortRecursive(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {
     int i;
-
     if ( num > 1 ) {
-        i = partition(base,num,size,comp);
-        quicksortRecursive(base,i-1,size,comp);
-        quicksortRecursive(base+i*size,num-i-1,size,comp);
+        i = partition(base,num,size,less);
+        quicksortRecursive(base,i-1,size,less);
+        quicksortRecursive(base+i*size,num-i-1,size,less);
     }
 }
 
+/*
+int partition(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
+int partition(Item a[], int l, int r)
+{
+	int i = l-1, j = r;
+	void *v;
+	
+	if(!(v=malloc(size)))
+		err(ERR_ALLOC,__FILE__,__LINE__);
+
+	memcpy(v, base+(num-1)*size, size);
+	for (;;)
+	{
+		for()
+		while (less(a[++i], v)) ;
+
+		while (less(v, a[--j])) if (j == l) break;
+		if (i >= j) break;
+		exch(a[i], a[j]);
+	}
+	exch(a[i], a[r]);
+	return i;
+}
+
+void quicksortRecursive(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
+void quicksort(Item a[], int l, int r)
+{
+	int i;
+
+	if (num <= 0) return;
+	i = partition(base, num, size, less);
+	quicksort(a, l, i-1);
+	quicksort(a, i+1, r);
+}
+
+*/
