@@ -20,7 +20,7 @@
 #include <sys/time.h>
 
 #include "err.h"
-//#include "algoritmos.h"
+#include "algoritmos.h"
 
 
 void intRandFill(void *v, size_t num);
@@ -84,15 +84,7 @@ struct fillFuncs {
 
 
 
-int intComp(const int *i1, const int *i2)
-{
-	return *i2-*i1;
-}
 
-int hipoComp(const struct hipo *s1, const struct hipo *s2)
-{
-	return s2->chave - s1->chave;
-}
 
 void err(int errCode, char file[], int line)
 {
@@ -103,7 +95,15 @@ void err(int errCode, char file[], int line)
 
 
 
+int intComp(const int *i1, const int *i2)
+{
+	return *i1-*i2;
+}
 
+int hipoComp(const struct hipo *s1, const struct hipo *s2)
+{
+	return s1->chave - s2->chave;
+}
 
 void intRandFill(void *v, size_t num)
 {
@@ -132,22 +132,31 @@ void hipoFill(void *v, size_t num)
 		vet[i].chave = rand();
 }
 
+void printElemInt(const int *e)
+{
+	printf("%i\n",*e);
+}
 
+void printElemHipo(const struct hipo *e)
+{
+	printf("%i\n",e->chave);
+}
 
 /*
 Arg1: int com tamnho dos teste a ser realizado.
 Arg2: int com tamanho de cada elemento do vetor.
 Arg3: Ponteiro de função que preenche os vetores
-Arg4: Ponteiro para a função que compara 2 elementos do vetor
-Arg5: Vetor da struct algoritimos com as função de ordenação a serem usadas. Termina com NULLs
+Arg4: Ponteiro para função q imprime o elemento
+Arg5: Ponteiro para a função que compara 2 elementos do vetor
+Arg6: Vetor da struct algoritimos com as função de ordenação a serem usadas. Termina com NULLs
 */
-int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int(*comp)(const void*,const void*), struct Algoritimos Algs[])
+int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), void(*printElem)(const void*), int(*comp)(const void*,const void*), struct Algoritimos Algs[])
 {
 	int i;
 	register int k;
 	struct timeval t1,t2;
 	char * vet[3];
-	int *p;
+	void *p;
 
 	/* vet[0] : vetor original */
 	if(!(vet[0] = malloc(tamVet * size * 3)))
@@ -158,16 +167,17 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int
 
 	fill(vet[0], tamVet);
 
+	puts("Before:");
+	for( k=0,p=vet[0] ; k<20 && k<tamVet ; ++k , p = vet[0]+(k*size) )
+		printElem(p);
+	puts("\n");
+
 	for( k=0 ; fillFuncNames[k].name ; ++k )
 		if(fillFuncNames[k].fillFunc == fill)
 			break;
 	if(!fillFuncNames[k].name)
 		err(ERR_UNKNOWFUNCTION,__FILE__,__LINE__);
 
-	puts("Before:");
-	for( k=0,p=(int*)vet[0] ; k<20 && k<size ; ++k , p = (int*)(vet[0]+(k*size)) )
-			printf("%i\n", *p);
-	puts("\n");
 
 	fprintf(out, "TipoDeDado: \"%s\"\tSize: %i\tTamVet: %i\n", fillFuncNames[k].name, size, tamVet);
 	fprintf(out, "Algoritimo\tTempoSeg\tTempouseg\n");
@@ -183,8 +193,8 @@ int experimento(const int tamVet, const int size, void(*fill)(void*,size_t), int
 
 
 		printf("Afer (%s):\n",Algs[i].name);
-		for( k=0,p=(int*)vet[1] ; k<20 && k<size ; ++k , p = (int*)(vet[1]+(k*size))  )
-			printf("%i\n", *p);
+		for( k=0,p=vet[1] ; k<20 && k<tamVet ; ++k , p = vet[1]+(k*size) )
+			printElem(p);
 		puts("\n");
 
 		/* Verifica se a função fez tudo certo */
@@ -215,10 +225,11 @@ void usage (int status)
 
 	if(!status)
 	{
-		fprintf(stderr,"Usage: %s [-a alg] -t tam [-x3]\n", appName);
-		fprintf(stderr,"\nWhere:\ttam is the test vector size. Use tam<0 for defaults testes\n");
-		fprintf(stderr,"\tx3 runs experiment 3. Without it runs experiments 1 and 2\n");
-		fprintf(stderr,"\tAlg is the algorithm name. These's the disponible ones:\n");
+		fprintf(stderr,"Usage: %s [-a alg] -t tam [-xn]\n", appName);
+		fprintf(stderr,"\nWhere:\t-t tam\tThe test vector size. Use tam<0 for defaults vector testes\n");
+		fprintf(stderr,"-s --seed\tThe seed for srand. seed<0 will take the time. Dafualt is 0\n");
+		fprintf(stderr,"\t-xn\tRuns experiment n. Without it runs experiments 1 and 2\n");
+		fprintf(stderr,"\t-aAlg\tAlg is the algorithm name. These's the disponible ones:\n");
 		for( i=0 ; AlgNames[i].name ; ++i )
 			fprintf(stderr,"\t\t%s\n",AlgNames[i].name);
 		fputs("\n",stderr);
@@ -337,7 +348,7 @@ int main(int argc, char *argv[])
 	if(x3)
 	{
 		if(tam<=0) tam = 500;
-		experimento(tam, sizeof(struct hipo), hipoFill, (int(*)(const void*,const void*))hipoComp, Algs);
+		experimento(tam, sizeof(struct hipo), hipoFill, (void(*)(const void*))printElemHipo, (int(*)(const void*,const void*))hipoComp, Algs);
 	}
 	else
 	{
@@ -348,8 +359,8 @@ int main(int argc, char *argv[])
 		}
 		for( i=0 ; DefaultTamVet[i] ; ++i )
 		{
-			experimento(DefaultTamVet[i], sizeof(int), intRandFill, (int(*)(const void*,const void*))intComp, Algs);
-			experimento(DefaultTamVet[i], sizeof(int), intOrdFill, (int(*)(const void*,const void*))intComp, Algs);
+			experimento(DefaultTamVet[i], sizeof(int), intRandFill, (void(*)(const void*))printElemInt, (int(*)(const void*,const void*))intComp, Algs);
+			experimento(DefaultTamVet[i], sizeof(int), intOrdFill, (void(*)(const void*))printElemInt, (int(*)(const void*,const void*))intComp, Algs);
 		}
 	}
 	

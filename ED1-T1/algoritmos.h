@@ -13,25 +13,15 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-typedef Item;
 
-int compara(int a, int b);
+void swap(void * e1, void *e2, size_t size);
 
-int comp(hp a, hp b);
-
-void selectionsort(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void insertionsort(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void insertionSent(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void bolhaS(void *base,size_t num,size_t size,int(*comp)(const void*,const void*));//ponteiro deveria chamar less, tambem nao alterei esta implementacao
-
-void bolhaCPA(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void shellsort(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void stacksort(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
-
-void quick(void *base,size_t num,size_t size,int(*less)(const void*,const void*));
+void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
+void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const void*));
+void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+int partition(void *base, size_t num, size_t size, int(*comp)(const void*,const void*));
+void quicksortRecursive(void *base, size_t num, size_t size, int(*comp)(const void*,const void*));
 

@@ -102,7 +102,7 @@ void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const
 	for (i = 0; i <= num; ++i)
 		for (j = i+1; j<= num; ++j)
 			if ( !comp(base+(j-1)*size,base+j*size) )
-				swap(base+(j-1)*size,base+j*size);
+				swap(base+(j-1)*size,base+j*size,size);
 }
 
 void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
