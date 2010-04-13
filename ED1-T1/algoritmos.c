@@ -18,7 +18,8 @@ void swap(void * e1, void *e2, size_t size)
 }
 
 
-void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*)){
+void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
+{
     size_t a, b, pos;
     void *menor = malloc(size);
     for ( a = 0; a < num*size; a+=size)
@@ -39,13 +40,16 @@ void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,c
     }
 }
 
-void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
+{
     size_t i, k;
     void *index = malloc(size);
-	for ( i = 0; i < num*size; i+=size){
+	for ( i = 0; i < num*size; i+=size)
+	{
 		k = i;
 		memcpy(index,base+i,size);
-		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) ){
+		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) )
+		{
 			memcpy(base+k,base+(k-size),size);
 			k-=size;
 		}
@@ -53,17 +57,21 @@ void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*,
 	}
 }
 
-void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
+{
 	size_t i, k;
-	void *index = malloc(size);//, *b = malloc(size);
-	for (i = size*(num-1); 0 > i; i-=size){
+	void *index = malloc(size);
+	for (i = size*(num-1); 0 > i; i-=size)
+	{
 		if ( memcmp(base+i,base+(i-size),size) == 0 )
 		    swap(base+i,base+(i-size),size);
 	}
-	for ( i = 0; i < num*size; i+=size){
+	for ( i = 0; i < num*size; i+=size)
+	{
 		k = i;
 		memcpy(index,base+i,size);
-		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) ){
+		while( ( k != 0 ) && ( less(base+(k-size),index) > 0 ) )
+		{
 			memcpy(base+k,base+(k-size),size);
 			k-=size;
 		}
@@ -82,12 +90,15 @@ void bolhasort(void *base, size_t num, size_t size, int(*comp)(const void*,const
 				swap(base+(j-1)*size,base+j*size);
 }
 
-void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
+{
     int troca;
 	size_t i, j;
-	for (i = 0, troca = 0; i < size*num; i+=size){
+	for (i = 0, troca = 0; i < size*num; i+=size)
+	{
 		for (j = size; j< num*size; j+=size){
-			if ( less(base+(j-size),base+j) > 0 ){
+			if ( less(base+(j-size),base+j) > 0 )
+			{
        		    swap(base+(j-size),base+j,size);
                 troca = 1;
 			}
@@ -96,16 +107,19 @@ void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, cons
 	}
 }
 
-void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*)){
+void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
+{
     int h;
     size_t i,j;
     void *v = malloc(size);
     for( h = 1; h < (num*size)/9; h = (3*h) + 1);
     for( ; h > 0; h /= 3)
-        for ( i = h*size; i < num*size; i+=size){
+        for ( i = h*size; i < num*size; i+=size)
+        {
             j = i;
             memcpy(v,base+i,size);
-            while( (j >= h*size) && (less(v, base+(j-(h*size))) < 0)){
+            while( (j >= h*size) && (less(v, base+(j-(h*size))) < 0))
+            {
                 memcpy(base+j,base+(j-(h*size)),size);
                 j -= (h*size);
             }
