@@ -10,7 +10,7 @@ void swap(void * e1, void *e2, size_t size)
 	void *aux;
 	
 	if(!(aux=malloc(size)))
-		err(ERR_ALLOC,__FILE__, __LINE__);
+		err(ERR_ALLOC,__FILE__,__LINE__);
 
 	memcpy(aux,e1,size);
 	memcpy(e1,e2,size);
