@@ -30,12 +30,15 @@ void swap(void * e1, void *e2, size_t size)
 	memcpy(aux,e1,size);
 	memcpy(e1,e2,size);
 	memcpy(e2,aux,size);
+	free(aux);
 }
 
 void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {
     size_t a, b, pos;
-    void *menor = malloc(size);
+    void *menor;
+    if( !(menor=malloc(size)) )
+		err(ERR_ALLOC,__FILE__,__LINE__);
     for ( a = 0; a < num*size; a+=size)
     {
         memcpy(menor,(base+a),size);
@@ -58,7 +61,9 @@ void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,c
 void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
 {
     size_t i, k;
-    void *index = malloc(size);
+    void *index;
+    if ( !(index = malloc(size) ) )
+        err(ERR_ALLOC,__FILE__,__LINE__);
 	for ( i = 0; i < num*size; i+=size)
 	{
 		k = i;
@@ -70,12 +75,15 @@ void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*,
 		}
 		memcpy(base+k,index,size);
 	}
+	free(index);
 }
 
 void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
 {
 	size_t i, k;
-	void *index = malloc(size);
+	void *index;
+	if ( !(index = malloc(size) ) )
+        err(ERR_ALLOC,__FILE__,__LINE__);
 	for (i = size*(num-1); 0 > i; i-=size)
 	{
 		if ( memcmp(base+i,base+(i-size),size) == 0 )
@@ -92,6 +100,7 @@ void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*,
 		}
 		memcpy(base+k,index,size);
 	}
+	free(index);
 }
 
 void bolhaS(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
@@ -124,7 +133,9 @@ void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, con
 {
     int h;
     size_t i,j;
-    void *v = malloc(size);
+    void *v;
+    if ( !(v = malloc(size) ) )
+        err(ERR_ALLOC,__FILE__,__LINE__);
     for( h = 1; h < (num*size)/9; h = (3*h) + 1);
     for( ; h > 0; h /= 3)
         for ( i = h*size; i < num*size; i+=size)
@@ -138,6 +149,7 @@ void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, con
             }
             memcpy(base+j,v,size);
         }
+    free(v);
 }
 
 /*void stacksort(int *vet, int tam, int (*less)(int,int)){
@@ -169,16 +181,19 @@ int partition(void *base, size_t num, size_t size, int(*less)(const void*,const 
 {
     int i = -1;
     int j = (int)num-1;
-    void *v = malloc(size);
-    memcpy(v,base+(num-1)*size,size);
+    void *v;
+    if ( !( v = malloc(size) ))
+        err(ERR_ALLOC, __FILE__, __LINE__);
+    memcpy(v,base+((num-1)*size),size);
     for( ; ; ){
-        while( less(base+(++i)*size, v) );
-        while( less(v, base+(--j)*size) )
+        while( less(base+((++i)*size), v) );
+        while( less(v, base+((--j)*size)) )
             if ( j == 0 ) break;
         if ( i >= j ) break;
-        swap(base+i*size,base+j*size,size);
+        swap(base+(i*size),base+(j*size),size);
     }
-    swap(base+i*size,base+(num-1)*size,size);
+    swap(base+(i*size),base+((num-1)*size),size);
+    free(v);
     return i;
 }
 
