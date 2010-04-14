@@ -265,7 +265,7 @@ void usage (int status)
 				if(AlgsGlobal[i].func == AlgNames[j].algo)
 				{
 					if(!c)
-						fprintf(stderr,"\t\t\t\t");
+						fprintf(stderr,"\t\t\t");
 					fprintf(stderr,"%s, ",AlgNames[j].name);
 					c++;
 				};
