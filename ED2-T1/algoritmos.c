@@ -66,22 +66,29 @@ void stacksort(void *base, size_t num, size_t size, int (*less)(const void*, con
 		err(ERR_ALLOC,__FILE__,__LINE__);
     pilha p;
     start(&p);
-    for (a = 0; a < num*size; a+=size)
+    for( a = 0; a < num*size; a+=size)
     {
         memcpy(menor,(base+a),size);
-        b = pos = a + size;
+        b = a + size;
         while ( b < num*size )
         {
             if ( less(base+b,menor) < 0 ){
-                if ( !(less(base+a, menor) == 0) )
-                    push(&p, menor, size, (pos/size));
+                if ( !(less(base+a, menor) == 0) ){
+                    push(&p, pos);
+                }
                 memcpy(menor,base+b,size);
                 pos = b;
             }
             b+=size;
         }
-        if ( less(menor,base+a) < 0 )
+        if ( less(menor,base+a) < 0 ){
             swap(base+a,base+pos,size);
+            pos = a + size;
+            while( pop(&p,&b) ){
+                swap(base+pos,base+b,size);
+                pos+=size;
+            }
+        }
     }
 }
 

@@ -38,33 +38,33 @@ int cheia(pilha *p)
     return 1;
 }
 
-int push(pilha *p, void *e, size_t size, int pos)
+int push(pilha *p, size_t e)
 {
     pilha p1 = malloc(sizeof(no));
     if ( p1 == NULL ) return 0;
     p1->prox = *p;
-    p1->local = pos;
-    p1->info = malloc(size);
-    memcpy( p1->info, e, size);
+    p1->local = e;
+//    p1->info = malloc(size);
+//    memcpy( p1->info, e, size);
     *p = p1;
 //    if ( size == sizeof(char) ) p1->t = 0;
 //    else p1->t = 1;
     return 1;
 }
 
-int pop(pilha *p, void *e, size_t size, int *pos){
+int pop(pilha *p, size_t *e)
+{
     if ( vazia(p) ) return 0;
     pilha p1 = *p;
-    memcpy( e, (p1->info), size);
-    *pos = p1->local;
+    *e = p1->local;
     *p = p1->prox;
     free(p1);
     return 1;
 }
 
-int peek(pilha *p, void *e){
+int peek(pilha *p, size_t *e){
     if ( vazia(p) ) return 0;
-    memcpy(e, (*p)->info, sizeof((*p)->info));
+    *e = (*p)->local;
     return 1;
 }
 

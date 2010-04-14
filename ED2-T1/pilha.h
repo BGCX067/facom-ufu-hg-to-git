@@ -14,8 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 typedef struct no{
-    int local;
-    void *info;
+    size_t local;
     struct no* prox;
 }no, *pilha;
 
@@ -25,9 +24,9 @@ int vazia(pilha *p);
 
 int cheia(pilha *p);
 
-int push(pilha *p, void *e, size_t size, int pos);
+int push(pilha *p, size_t e);
 
-int pop(pilha *p, void *e, size_t size, int *pos);
+int pop(pilha *p, size_t *e);
 
-int peek(pilha *p, void *e);
+int peek(pilha *p, size_t *e);
 
