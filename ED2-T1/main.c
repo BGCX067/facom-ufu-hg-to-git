@@ -68,6 +68,7 @@ struct Algoritmos {
 		{bolhaCPA, "BubbleSort with early stop", "Generic BubbleSort implementation (with early stop)"},
     	{shellsort, "ShellSort", "Generic ShellSort implementation"},
     	{quicksortRecursive,"Quick Sort Recursive","QuickSort Recursive (Generic)"},
+    	{stacksort,"StackSort","Stacksort algorithm (Generic)"},
 		{NULL, NULL, NULL}
 	};
 
@@ -87,6 +88,7 @@ struct algoNames {
 		{"bubbleCPA", bolhaCPA},
     	{"shell", shellsort},
     	{"quicksort", quicksortRecursive},
+    	{"stack",stacksort},
 		{NULL, NULL}
 	};
 

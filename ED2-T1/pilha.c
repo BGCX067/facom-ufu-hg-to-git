@@ -12,75 +12,59 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
-
+   
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 #include "pilha.h"
 
 void start(pilha *p)
 {
-	p->topo = MAX;
+    *p = NULL;
 }
 
-int isEmpty(pilha *p)
+int vazia(pilha *p)
 {
-	if ( p->topo == MAX )
-		return 1;
-	return 0;
-}
-
-int isFull(pilha *p)
-{
-	if( p->topo == (-1) )
-		return 1;
+    if ( *p == NULL )
+        return 1;
     return 0;
 }
 
-int push(pilha *p, int e1, int e2)
+int cheia(pilha *p)
 {
-	if ( isFull(p) )
-		return 0;
-	else
-	{	
-		p->topo--;
-		p->vet[p->topo][0] = e1;
-		p->vet[p->topo][1] = e2;
-		return 1;
-	}
+    if ( vazia(p) )
+        return 0;
+    return 1;
 }
 
-int pop(pilha *p, int *e1, int *e2)
+int push(pilha *p, void *e, size_t size, int pos)
 {
-	if( isEmpty(p) )
-		return 0;
-	else
-	{
-		*e1 = p->vet[p->topo][0];
-    	*e2 = p->vet[p->topo][1];
-		p->topo++;
-		return 1;
-	}
+    pilha p1 = malloc(sizeof(no));
+    if ( p1 == NULL ) return 0;
+    p1->prox = *p;
+    p1->local = pos;
+    p1->info = malloc(size);
+    memcpy( p1->info, e, size);
+    *p = p1;
+//    if ( size == sizeof(char) ) p1->t = 0;
+//    else p1->t = 1;
+    return 1;
 }
 
-int peek(pilha *p, int *e1, int *e2)
-{
-	if( isEmpty(p) )
-		return 0;
-	else
-	{
-		*e1 = p->vet[p->topo][0];
-    	*e2 = p->vet[p->topo][1];
-		return 1;
-	}
+int pop(pilha *p, void *e, size_t size, int *pos){
+    if ( vazia(p) ) return 0;
+    pilha p1 = *p;
+    memcpy( e, (p1->info), size);
+    *pos = p1->local;
+    *p = p1->prox;
+    free(p1);
+    return 1;
 }
 
-void print(pilha *p)
-{
-	int i = p->topo;
-	printf("[ ");
-	for( ; i < MAX; i++)
-		printf("(%d ^ %d)| ",p->vet[i][0],p->vet[i][1]);
-	printf(" ].\n");
+int peek(pilha *p, void *e){
+    if ( vazia(p) ) return 0;
+    memcpy(e, (*p)->info, sizeof((*p)->info));
+    return 1;
 }
 

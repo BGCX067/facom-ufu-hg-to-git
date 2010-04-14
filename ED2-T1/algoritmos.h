@@ -16,12 +16,13 @@
 
 void swap(void * e1, void *e2, size_t size);
 
+void bolhaS(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
+int partition(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
+void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
+void stacksort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
 void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
 void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
 void insertionSent(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
-void bolhaS(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
-void bolhaCPA(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
-void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*));
-int partition(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
 void quicksortRecursive(void *base, size_t num, size_t size, int(*less)(const void*,const void*));
 

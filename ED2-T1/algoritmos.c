@@ -17,7 +17,7 @@
 #include <string.h>
 #include "algoritmos.h"
 #include "err.h"
-//#include "pilha.h"
+#include "pilha.h"
 
 
 void swap(void * e1, void *e2, size_t size)
@@ -56,6 +56,33 @@ void selectionsort(void *base, size_t num, size_t size, int(*less)(const void*,c
             swap(base+a,base+pos,size);
     }
    	free(menor);
+}
+
+void stacksort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
+{
+    size_t a, b, pos;
+    void *menor;
+    if( !(menor=malloc(size)) )
+		err(ERR_ALLOC,__FILE__,__LINE__);
+    pilha p;
+    start(&p);
+    for (a = 0; a < num*size; a+=size)
+    {
+        memcpy(menor,(base+a),size);
+        b = pos = a + size;
+        while ( b < num*size )
+        {
+            if ( less(base+b,menor) < 0 ){
+                if ( !(less(base+a, menor) == 0) )
+                    push(&p, menor, size, (pos/size));
+                memcpy(menor,base+b,size);
+                pos = b;
+            }
+            b+=size;
+        }
+        if ( less(menor,base+a) < 0 )
+            swap(base+a,base+pos,size);
+    }
 }
 
 void insertionsort(void *base, size_t num, size_t size, int (*less)(const void*, const void*))
@@ -151,31 +178,6 @@ void shellsort(void *base, size_t num, size_t size, int (*less)(const void*, con
         }
     free(v);
 }
-
-/*void stacksort(int *vet, int tam, int (*less)(int,int)){
-    int a, b, pos;
-    int menor;
-    pilha p;
-    start(&p);
-    for (a = 0; a < tam - 1; ++a){
-        menor = vet[a];
-        b = a + 1;
-        while ( b < tam ){
-            if ( less(vet[b],menor) ){
-                if ( vet[a] != menor )
-                    push(&p, menor, pos);
-                menor = vet[b];
-                pos = b;
-            }
-            b++;
-        }
-        if ( menor != vet[a] ){
-            int temp = vet[a];
-            vet[a] = menor;
-            vet[pos] = temp;
-        }
-    }
-}*/
 
 int partition(void *base, size_t num, size_t size, int(*less)(const void*,const void*))
 {

@@ -13,24 +13,21 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-# define MAX 1000000
-
 typedef struct no{
-	int topo;
-	int vet[MAX][2];
-}pilha;
+    int local;
+    void *info;
+    struct no* prox;
+}no, *pilha;
 
-void start(pilha *p);
+void inicializa(pilha *p);
 
-int isEmpty(pilha *p);
+int vazia(pilha *p);
 
-int isFull(pilha *p);
+int cheia(pilha *p);
 
-int push(pilha *p, int e1, int e2);
+int push(pilha *p, void *e, size_t size, int pos);
 
-int pop(pilha *p, int *e1, int *e2);
+int pop(pilha *p, void *e, size_t size, int *pos);
 
-int peek(pilha *p, int *e1, int *e2);
-
-void print(pilha *p);
+int peek(pilha *p, void *e);
 
