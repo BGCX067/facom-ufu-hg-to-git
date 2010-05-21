@@ -19,3 +19,4 @@
 void recebe(char *s, Graph g);
 
 int count(char *s, char c);
+

@@ -66,7 +66,7 @@ void menu(char s[])
 {
     int num;
     num = count(s,'\n')+1;
-    Graph g = GRAPHinit(num+1);
+    Graph g = GRAPHinit(2*(num+1));
     recebe(s,g);
     traverse_dr(g,0);
     GRAPHdestroy(g);

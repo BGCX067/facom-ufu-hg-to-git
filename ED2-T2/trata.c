@@ -82,7 +82,7 @@ void analisa(Graph g)
         {
             k = getTam(&g->adj[i]);
             if ( (k == 0 ) && (i != (g->V -1)))
-                insereDummy(i,g->V-1,g);
+                insereDummy(i,usados,g);
         }
     }
 }
@@ -95,25 +95,19 @@ int getTime(char s[], Graph g)
 {
     if ( strcmp(s,"-") == 0 )
         return 0;
-    int i, j, k, l, r, n, mx, ot;
-    i = j = k = l = r = mx = ot = 0;
+    int i, k, r, n, mx, ot;
+    i = k = r = mx = ot = 0;
     n = count(s,',') + 1;
     char **pch = separa(s,',');
     if (n != 1)
     {
-        i = 0; j = 1;
-        do
-        {
-            for ( r = 0; r < g->V; ++r)
+    	for ( i = 0; i < n; ++i){
+    		for ( r = 0; r < g->V; ++r)
                 k = (getDest(g->adj[r],pch[i]) > k)?getDest(g->adj[r],pch[i]):k;
-            for ( r = 0; r < g->V; ++r)
-                l = (getDest(g->adj[r],pch[j]) > l)?getDest(g->adj[r],pch[j]):l;
-            insereDummy(k,l,g);
-            ++i;
-            ++j;
-            ot = (k>l)?k:l;
-            mx = (ot>mx)?ot:mx;
-        }while(j <= (n-1));
+			insereDummy(k,usados+1,g);
+    	}
+    	usados++;
+    	mx = usados;
     }else
     {
         for ( i = 0; i < usados; ++i)
@@ -188,6 +182,8 @@ void recebe(char *s, Graph g)
         monta(vetor[i],g);
         free(vetor[i]);
     }
+    g->V = usados+1;
+    g->adj = realloc(g->adj,(usados+1)*sizeof(int));
     free(vetor);
     analisa(g);
 }
